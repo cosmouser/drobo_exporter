@@ -17,7 +17,7 @@ type ESATMUpdate struct {
 	ReleaseDate               string   `xml:"mReleaseDate"`
 	Arch                      string   `xml:"mArch"`
 	FirmwareFeatures          int      `xml:"mFirmwareFeatures"`
-	xtFtr                     int      `xml:"extFtr"`
+	XtFtr                     int      `xml:"extFtr"`
 	FirmwareTestFeatures      int      `xml:"mFirmwareTestFeatures"`
 	FirmwareTestState         int      `xml:"mFirmwareTestState"`
 	FirmwareTestValue         int      `xml:"mFirmwareTestValue"`
