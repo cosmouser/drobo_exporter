@@ -73,18 +73,23 @@ func (e ESATMUpdate) extractMetrics() []prometheus.Metric {
 	for i := 0; i < updateVal.NumField(); i++ {
 		t := prometheus.UntypedValue
 		log.Infof("%30s: %30v %30v", updateVal.Type().Field(i).Name, updateVal.Field(i).Interface(), updateVal.Field(i).Kind())
-		if updateVal.Field(i).Kind().String() == "int" {
-			t = prometheus.GaugeValue
-			field := updateVal.Type().Field(i).Name
-			promField := "drobo_" + strcase.ToSnake(field)
-			sample, err := prometheus.NewConstMetric(prometheus.NewDesc(promField, helpInfo[field], nil, nil),
-				t, float64(updateVal.Field(i).Int()))
-			if err != nil {
-				sample = prometheus.NewInvalidMetric(prometheus.NewDesc("drobo_error", "Error calling NewConstMetric", nil, nil),
-					fmt.Errorf("error for metric %s", promField))
-				log.Error(err)
+		field := updateVal.Type().Field(i).Name
+		promField := "drobo_" + strcase.ToSnake(field)
+		if _, ok := stateSets[field]; ok {
+			samples := enumAsStateSet(updateVal.Field(i).Int(), field)
+			result = append(result, samples...)
+		} else {
+			if updateVal.Field(i).Kind().String() == "int" {
+				t = prometheus.GaugeValue
+				sample, err := prometheus.NewConstMetric(prometheus.NewDesc(promField, helpInfo[field], nil, nil),
+					t, float64(updateVal.Field(i).Int()))
+				if err != nil {
+					sample = prometheus.NewInvalidMetric(prometheus.NewDesc("drobo_error", "Error calling NewConstMetric", nil, nil),
+						fmt.Errorf("error for metric %s", promField))
+					log.Error(err)
+				}
+				result = append(result, sample)
 			}
-			result = append(result, sample)
 		}
 	}
 	return result
