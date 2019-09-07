@@ -76,7 +76,7 @@ func (e ESATMUpdate) extractMetrics() []prometheus.Metric {
 		field := updateVal.Type().Field(i).Name
 		promField := "drobo_" + strcase.ToSnake(field)
 		if _, ok := stateSets[field]; ok {
-			samples := enumAsStateSet(updateVal.Field(i).Int(), field)
+			samples := enumAsStateSet(int(updateVal.Field(i).Int()), field)
 			result = append(result, samples...)
 		} else {
 			if updateVal.Field(i).Kind().String() == "int" {
