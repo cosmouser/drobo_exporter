@@ -2,6 +2,7 @@ package main
 
 import (
 	"reflect"
+	"strconv"
 	"time"
 
 	"encoding/xml"
@@ -60,4 +61,63 @@ func ScrapeTarget(target string) ([]prometheus.Metric, error) {
 		values[i] = updateVal.Field(i).Interface()
 	}
 	return nil, nil
+}
+
+func (e *ESATMUpdate) extractMetrics() []prometheus.Metric {
+	// v.Type().Field(0).Name displays the name of a struct field
+	// If the field name matches something in our state set map
+	// process as state set according to the label name and
+	// label values for that map key.
+	// If the field type is int then process as gauge.
+	// Else: process as string
+
+}
+func enumAsStateSet(value int, field string) []prometheus.Metric {
+	results := []prometheus.Metric{}
+	state, ok := stateSets[field][value]
+	if !ok {
+		// Fallback to using the value.
+		state = strconv.Itoa(value)
+	}
+	promField := "drobo_" + strings.ToLower(field)
+	newMetric, err := prometheus.NewConstMetric(prometheus.NewDesc(promField, helpInfo[field], []string{promField}, nil),
+		prometheus.GaugeValue, 1.0, []string{state})
+	if err != nil {
+		newMetric = prometheus.NewInvalidMetric(prometheus.NewDesc("drobo_error", "Error calling NewConstMetric for EnumAsStateSet", nil, nil),
+			fmt.Errorf("error for metric %s", promField))
+	}
+	results = append(results, newMetric)
+
+	for k, v := range stateSets[field] {
+		if k == value {
+			continue
+		}
+		newMetric, err := prometheus.NewConstMetric(prometheus.NewDesc(promFIeld, helpInfo[field], []string{promField}, nil),
+			prometheus.GaugeValue, 0.0, []string{v})
+		if err != nil {
+			newMetric = prometheus.NewInvalidMetric(prometheus.NewDesc("drobo_error", "Error calling NewConstMetric for EnumAsStateSet", nil, nil),
+				fmt.Errorf("error for metric %s", promField))
+		}
+		results = append(results, newMetric)
+	}
+	return results
+}
+
+var stateSets = map[string]map[int]string{
+	"Status": map[int]string{
+		0x8000:  "droboOK",
+		0x8004:  "overYellowThreshold",
+		0x8006:  "overRedThreshold",
+		0x8010:  "hasBadDrive",
+		0x8046:  "aDriveHasBeenRemoved",
+		0x8240:  "dataProtectionInProgress",
+		0x18000: "dashboardIndicatesDroboIsOK",
+		0x18006: "droboOverRedThreshold",
+		0x18240: "dataProtectionInProgressDoNotRemoveDrives",
+	},
+	"FirmwareFeatureStates": map[int]string{
+		0x4: "unknown",
+		0x6: "singleRedundancy",
+		0x7: "dualRedundancy",
+	},
 }
