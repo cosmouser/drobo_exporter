@@ -5,9 +5,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
-
+	"gopkg.in/alecthomas/kingpin.v2"
 	"net/http"
 )
+
+var listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Default(":9045").String()
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	target := r.URL.Query().Get("target")
@@ -25,6 +27,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.AddFlags(kingpin.CommandLine)
+	kingpin.Version(version.Print("drobo_exporter"))
+	kingpin.HelpFlag.Short('h')
+	kingpin.Parse()
 	log.Infoln("Starting drobo exporter")
 	log.Infoln("Build context", version.BuildContext())
 
@@ -57,7 +63,6 @@ func main() {
 		</body>
 		</html>`))
 	})
-	listenAddress := ":9045"
-	log.Infof("Listening on %s", listenAddress)
-	log.Fatal(http.ListenAndServe(listenAddress, nil))
+	log.Infof("Listening on %s", *listenAddress)
+	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
