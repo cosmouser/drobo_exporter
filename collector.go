@@ -83,6 +83,18 @@ func (e ESATMUpdate) extractMetrics() []prometheus.Metric {
 				}
 				result = append(result, sample)
 			}
+			if updateVal.Field(i).Kind().String() == "string" {
+				t = prometheus.GaugeValue
+				value := 1.0
+				sample, err := prometheus.NewConstMetric(prometheus.NewDesc(promField, helpInfo[field], []string{promField}, nil),
+					t, value, updateVal.Field(i).String())
+				if err != nil {
+					sample = prometheus.NewInvalidMetric(prometheus.NewDesc("drobo_error", "Error calling NewConstMetric", nil, nil),
+						fmt.Errorf("error for metric %s", promField))
+					log.Error(err)
+				}
+				result = append(result, sample)
+			}
 		}
 	}
 	return result
