@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
-	"net"
 )
 
 type collector struct {
@@ -43,11 +41,7 @@ func (c collector) Collect(ch chan<- prometheus.Metric) {
 
 // ScrapeTarget fetches xml from a drobo and returns metrics
 func ScrapeTarget(target string) ([]prometheus.Metric, error) {
-	addr := net.ParseIP(target)
-	if addr == nil {
-		return nil, errors.New("invalid target address")
-	}
-	out, err := dialUPNP(addr)
+	out, err := dialUPNP(target)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +66,6 @@ func (e ESATMUpdate) extractMetrics() []prometheus.Metric {
 	updateVal := reflect.ValueOf(e)
 	for i := 0; i < updateVal.NumField(); i++ {
 		t := prometheus.UntypedValue
-		log.Infof("%30s: %30v %30v", updateVal.Type().Field(i).Name, updateVal.Field(i).Interface(), updateVal.Field(i).Kind())
 		field := updateVal.Type().Field(i).Name
 		promField := "drobo_" + strcase.ToSnake(field)
 		if _, ok := stateSets[field]; ok {

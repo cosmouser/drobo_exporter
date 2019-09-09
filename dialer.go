@@ -9,20 +9,19 @@ import (
 )
 
 const (
-	uPNPPort     = 5000
 	nasdXMLOpen  = "<ESATMUpdate>"
 	nasdXMLClose = "</ESATMUpdate>"
 )
 
-func dialUPNP(ip net.IP) (out []byte, err error) {
-	addr := net.TCPAddr{
-		IP:   ip,
-		Port: uPNPPort,
+func dialUPNP(target string) (out []byte, err error) {
+	host, port, err := net.SplitHostPort(target)
+	if err != nil {
+		return nil, err
 	}
 	dialer := net.Dialer{
 		Timeout: time.Second * 2,
 	}
-	conn, err := dialer.Dial("tcp", addr.String())
+	conn, err := dialer.Dial("tcp", net.JoinHostPort(host, port))
 	if err != nil {
 		return nil, err
 	}
