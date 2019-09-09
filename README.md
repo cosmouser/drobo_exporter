@@ -11,7 +11,7 @@ Modeled after [snmp_exporter](https://github.com/prometheus/snmp_exporter) this 
 
 ## Prometheus Configuration
 
-The snmp exporter needs to be passed the address as a parameter, this can be
+The drobo exporter needs to be passed the address as a parameter, this can be
 done with relabelling.
 
 Example config:
