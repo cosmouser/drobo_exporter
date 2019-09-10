@@ -140,6 +140,7 @@ var stateSets = map[string]map[int]string{
 		0x8240:  "dataProtectionInProgress",
 		0x18000: "dashboardIndicatesDroboIsOK",
 		0x18006: "droboOverRedThreshold",
+		0x18010: "hasBadDrive",
 		0x18240: "dataProtectionInProgressDoNotRemoveDrives",
 	},
 	"FirmwareFeatureStates": map[int]string{
