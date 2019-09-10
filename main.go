@@ -59,7 +59,6 @@ func main() {
 		<label>Target:</label> <input type="text" name="target" placeholder="X.X.X.X" value="1.2.3.4"><br>
 		<input type="submit" value="Submit">
 		</form>
-		    				<p><a href="/config">Config</a></p>
 		</body>
 		</html>`))
 	})
